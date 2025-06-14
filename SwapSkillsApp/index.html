@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple SkillSwap App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+    <nav>
+        <div class="logo">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4s7l-Yf41Qe0IITBw1KeyngzOetlRE0NbbA&s" alt="SkillSwap Logo" onerror="this.onerror=null;this.src='https://placehold.co/32x32/cccccc/000000?text=Logo';">
+            SkillSwap
+        </div>
+        <ul>
+            <li><a onclick="displayPage('profileSection')">Profile</a></li>
+            <li><a onclick="displayPage('matchesSection')">Matches</a></li>
+            <li><a onclick="displayPage('sessionsSection')">Sessions</a></li>
+            <li><a onclick="displayPage('forumSection')">Forum</a></li>
+            <li><a onclick="displayPage('messagingSection')">Messages</a></li>
+            <li><a onclick="displayPage('feedbackSection')">Feedback</a></li>
+            <li><button class="toggle-dark-nav" onclick="toggleDarkMode()">Toggle Dark Mode</button></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>SkillSwap App</h1>
+
+        <div class="auth-card" id="authSection">
+            <h2>User Authentication</h2>
+            <input type="email" id="authEmail" placeholder="Email" required />
+            <input type="password" id="authPassword" placeholder="Password" required />
+            <button id="registerBtn">Register</button>
+            <button id="loginBtn">Login</button>
+            <p id="authMessage"></p>
+        </div>
+
+        <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+
+        <div id="appContent" class="hidden">
+
+            <div id="profileSection" class="app-page-section">
+                <form id="profileForm" class="card">
+                    <h2>Create Your Profile</h2>
+                    <input type="text" id="name" placeholder="Your Name" required />
+                    <input type="text" id="teach" placeholder="Skill You Can Teach (e.g., 'coding', 'guitar')" required />
+                    <input type="text" id="learn" placeholder="Skill You Want to Learn (e.g., 'yoga', 'cooking')" required />
+                    <textarea id="interests" placeholder="Your Interests (comma-separated, e.g., 'reading, hiking')"></textarea>
+
+                    <label for="teachSkillLevel">Your Skill Level in what you Teach:</label>
+                    <select id="teachSkillLevel">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                        <option value="Expert">Expert</option>
+                    </select>
+
+                    <label for="learnSkillLevel">Your Desired Skill Level in what you Learn:</label>
+                    <select id="learnSkillLevel">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+
+                    <button type="submit">Submit Profile</button>
+                </form>
+            </div>
+
+            <div id="matchesSection" class="app-page-section">
+                <div class="section">
+                    <h2>Match Notifications</h2>
+                    <div id="matchNotifications">
+                        <p>Waiting for relevant skill matches...</p>
+                    </div>
+                </div>
+                <div class="section">
+                    <h2>Skill Matches</h2>
+                    <div id="matchResults"></div>
+                </div>
+            </div>
+
+            <div id="sessionsSection" class="app-page-section">
+                <div class="card">
+                    <h2>Exchange Sessions</h2>
+                    <h3>Schedule a Session</h3>
+                    <input type="email" id="sessionPartnerEmail" placeholder="Partner's Email" required />
+                    <input type="text" id="sessionSkill" placeholder="Skill to Exchange" required />
+                    <input type="datetime-local" id="sessionDateTime" required />
+                    <select id="sessionDuration">
+                        <option value="30">30 minutes</option>
+                        <option value="60">60 minutes</option>
+                        <option value="90">90 minutes</option>
+                    </select>
+                    <select id="sessionType">
+                        <option value="virtual">Virtual</option>
+                        <option value="in-person">In-Person</option>
+                    </select>
+                    <button onclick="scheduleSession()">Schedule Session</button>
+                    <h3>Upcoming Sessions</h3>
+                    <div id="upcomingSessions"></div>
+                </div>
+            </div>
+
+            <div id="forumSection" class="app-page-section">
+                <div class="card">
+                    <h2>Community Forum</h2>
+                    <h3>Ask a Question or Share Experience</h3>
+                    <input type="text" id="forumTitle" placeholder="Post Title" required />
+                    <textarea id="forumContent" placeholder="Your post content..." rows="4" required></textarea>
+                    <button onclick="submitForumPost()">Post to Forum</button>
+                    <h3>Latest Posts</h3>
+                    <div id="forumPosts"></div>
+                </div>
+            </div>
+
+            <div id="messagingSection" class="app-page-section">
+                <div class="card">
+                    <h2>In-App Messaging</h2>
+                    <div id="chatMessages"></div>
+                    <textarea id="chatBox" placeholder="Type your message here..."></textarea>
+                    <button onclick="sendMessage()">Send Message</button>
+                </div>
+            </div>
+
+            <div id="feedbackSection" class="app-page-section">
+                <div class="card">
+                    <h2>Feedback and Rating System</h2>
+                    <h3>Leave Feedback for a Session</h3>
+                    <input type="email" id="feedbackTargetEmail" placeholder="Email of partner" required />
+                    <select id="rating">
+                        <option value="5">5 Stars - Excellent</option>
+                        <option value="4">4 Stars - Good</option>
+                        <option value="3">3 Stars - Average</option>
+                        <option value="2">2 Stars - Below Average</option>
+                        <option value="1">1 Star - Poor</option>
+                    </select>
+                    <textarea id="feedbackText" placeholder="Your detailed feedback..." rows="3"></textarea>
+                    <button onclick="submitSessionFeedback()">Submit Session Feedback</button>
+                    <h3>Received Feedback</h3>
+                    <div id="receivedFeedback"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
