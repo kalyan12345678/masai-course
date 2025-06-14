@@ -24,15 +24,16 @@ import {
 
 // --- Firebase Configuration ---
 
-const firebaseConfig = {
-    apiKey: "AIzaSyC_NtOHcDXve4Fbz1e689vzVbNtzksIpzg",
-    authDomain: "swap-app-cf4da.firebaseapp.com",
-    projectId: "swap-app-cf4da",
-    storageBucket: "swap-app-cf4da.appspot.com",
-    messagingSenderId: "102527007663",
-    appId: "1:102527007663:web:a37ba3f3ceedbe5f080d5a",
-    measurementId: "G-B1GP34VLQ8"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_NtOHcDXve4Fbz1e689vzVbNtzksIpzg", 
+            authDomain: "swap-app-cf4da.firebaseapp.com",
+            projectId: "swap-app-cf4da",
+            storageBucket: "swap-app-cf4da.appspot.com",
+            messagingSenderId: "102527007663",
+            appId: "1:102527007663:web:a37ba3f3ceedbe5f080d5a",
+            measurementId: "G-B1GP34VLQ8"
+        };
+
 
 // --- Initialize Firebase Services ---
 const app = initializeApp(firebaseConfig);
@@ -41,17 +42,31 @@ const db = getFirestore(app);
 
 // --- Global Variables ---
 let currentUserEmail = "";
-const displayedMatchNotifications = new Set(); // Prevent duplicate notifications
+const displayedMatchNotifications = new Set(); 
 
 // --- Get References to HTML Elements ---
-const authEmailInput = document.getElementById("authEmail");
-const authPasswordInput = document.getElementById("authPassword");
-const registerBtn = document.getElementById("registerBtn");
+// Login Form Elements
+const loginEmailInput = document.getElementById("loginEmail");
+const loginPasswordInput = document.getElementById("loginPassword");
 const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
+const loginSection = document.getElementById("loginSection");
+
+// Register Form Elements
+const registerEmailInput = document.getElementById("registerEmail");
+const registerPasswordInput = document.getElementById("registerPassword");
+const registerConfirmPasswordInput = document.getElementById("registerConfirmPassword");
+const registerBtn = document.getElementById("registerBtn");
+const registerSection = document.getElementById("registerSection");
+
+// Authentication Section and Toggle Buttons
 const authMessage = document.getElementById("authMessage");
-const authSection = document.getElementById("authSection");
+const authContainer = document.getElementById("authContainer"); 
+const showRegisterBtn = document.getElementById("showRegisterBtn");
+const showLoginBtn = document.getElementById("showLoginBtn");
+
+const logoutBtn = document.getElementById("logoutBtn");
 const appContent = document.getElementById("appContent");
+
 
 // --- Utility Functions ---
 
@@ -85,24 +100,59 @@ window.displayPage = (pageId) => {
     }
 };
 
+// --- Authentication Form Toggling ---
+
+/**
+ * Shows the registration form and hides the login form.
+ */
+showRegisterBtn.addEventListener("click", (event) => {
+    event.preventDefault(); // Prevent page reload
+    loginSection.classList.add("hidden");
+    registerSection.classList.remove("hidden");
+    authMessage.classList.add('hidden'); 
+    loginEmailInput.value = '';
+    loginPasswordInput.value = '';
+});
+
+/**
+ * Shows the login form and hides the registration form.
+ */
+showLoginBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    registerSection.classList.add("hidden");
+    loginSection.classList.remove("hidden");
+    authMessage.classList.add('hidden'); 
+    registerEmailInput.value = '';
+    registerPasswordInput.value = '';
+    registerConfirmPasswordInput.value = '';
+});
+
 // --- User Authentication Functions ---
 
 registerBtn.addEventListener("click", async () => {
-    const email = authEmailInput.value.trim();
-    const password = authPasswordInput.value;
+    const email = registerEmailInput.value.trim();
+    const password = registerPasswordInput.value;
+    const confirmPassword = registerConfirmPasswordInput.value;
 
-    if (!email || !password) {
-        displayMessage("Please enter both email and password.", 'error');
+    if (!email || !password || !confirmPassword) {
+        displayMessage("Please enter email, password, and confirm password.", 'error');
         return;
     }
     if (password.length < 6) {
         displayMessage("Password should be at least 6 characters.", 'error');
         return;
     }
+    if (password !== confirmPassword) {
+        displayMessage("Passwords do not match.", 'error');
+        return;
+    }
 
     try {
         await createUserWithEmailAndPassword(auth, email, password);
         displayMessage("Registration successful! You are now logged in.", 'success');
+        registerEmailInput.value = "";
+        registerPasswordInput.value = "";
+        registerConfirmPasswordInput.value = "";
     } catch (error) {
         console.error("Registration Error:", error);
         let errorMessage = "Registration failed. Please try again.";
@@ -118,8 +168,8 @@ registerBtn.addEventListener("click", async () => {
 });
 
 loginBtn.addEventListener("click", async () => {
-    const email = authEmailInput.value.trim();
-    const password = authPasswordInput.value;
+    const email = loginEmailInput.value.trim();
+    const password = loginPasswordInput.value;
 
     if (!email || !password) {
         displayMessage("Please enter both email and password.", 'error');
@@ -129,10 +179,12 @@ loginBtn.addEventListener("click", async () => {
     try {
         await signInWithEmailAndPassword(auth, email, password);
         displayMessage("Logged in successfully!", 'success');
+        loginEmailInput.value = "";
+        loginPasswordInput.value = "";
     } catch (error) {
         console.error("Login Error:", error);
         let errorMessage = "Login failed. Please check your credentials.";
-        if (error.code === 'auth/invalid-credential') {
+        if (error.code === 'auth/invalid-credential') { 
             errorMessage = "Invalid email or password.";
         } else if (error.code === 'auth/user-disabled') {
             errorMessage = "Your account has been disabled.";
@@ -160,11 +212,14 @@ window.logout = async () => {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUserEmail = user.email;
-        authSection.classList.add("hidden");
+        authContainer.classList.add("hidden"); 
         logoutBtn.classList.remove("hidden");
         appContent.classList.remove("hidden");
-        authEmailInput.value = "";
-        authPasswordInput.value = "";
+        loginEmailInput.value = "";
+        loginPasswordInput.value = "";
+        registerEmailInput.value = "";
+        registerPasswordInput.value = "";
+        registerConfirmPasswordInput.value = "";
         authMessage.innerText = "";
 
         loadUserProfileAndMatches();
@@ -173,23 +228,28 @@ onAuthStateChanged(auth, (user) => {
         loadForumPosts();
         loadMessages();
         loadReceivedSessionFeedback();
+        loadSharedResources();
 
-        displayPage('profileSection');
+        displayPage('profileSection'); 
 
     } else {
         currentUserEmail = "";
         displayedMatchNotifications.clear();
-        authSection.classList.remove("hidden");
+        authContainer.classList.remove("hidden"); 
+        loginSection.classList.remove("hidden"); 
+        registerSection.classList.add("hidden"); 
         logoutBtn.classList.add("hidden");
         appContent.classList.add("hidden");
 
+        // Reset app content when logged out
         document.getElementById("profileForm").reset();
         document.getElementById("matchNotifications").innerHTML = "<p>Waiting for relevant skill matches...</p>";
-        document.getElementById("matchResults").innerHTML = "";
-        document.getElementById("upcomingSessions").innerHTML = "";
-        document.getElementById("forumPosts").innerHTML = "";
+        document.getElementById("matchResults").innerHTML = "<p>Update your profile to find matches!</p>";
+        document.getElementById("upcomingSessions").innerHTML = "<p>No upcoming sessions.</p>";
+        document.getElementById("forumPosts").innerHTML = "<p>No forum posts yet. Be the first to post!</p>";
         document.getElementById("chatMessages").innerHTML = "";
         document.getElementById("receivedFeedback").innerHTML = "";
+        document.getElementById("sharedResources").innerHTML = "";
         authMessage.innerText = "Please log in or register.";
     }
 });
@@ -236,6 +296,7 @@ async function submitProfile(event) {
         document.getElementById("teachSkillLevel").value = "Beginner";
         document.getElementById("learnSkillLevel").value = "Beginner";
 
+
         const currentUserProfile = (await getDoc(doc(db, "users", currentUserEmail))).data();
         displayMatches(currentUserProfile.teach, currentUserProfile.learn, currentUserProfile.interests);
 
@@ -264,12 +325,13 @@ async function loadUserProfileAndMatches() {
             document.getElementById("teachSkillLevel").value = userData.teachSkillLevel || "Beginner";
             document.getElementById("learnSkillLevel").value = userData.learnSkillLevel || "Beginner";
 
+
             displayMatches(userData.teach, userData.learn, userData.interests);
 
         } else {
             console.log("No user profile found, user can create one.");
             document.getElementById("profileForm").reset();
-            document.getElementById("matchResults").innerHTML = "";
+            document.getElementById("matchResults").innerHTML = "<p>Update your profile to find matches!</p>";
             document.getElementById("teachSkillLevel").value = "Beginner";
             document.getElementById("learnSkillLevel").value = "Beginner";
         }
@@ -294,7 +356,7 @@ async function displayMatches(currentUserTeachSkill, currentUserLearnSkill, curr
     querySnapshot.forEach(docSnap => {
         const otherUser = docSnap.data();
         if (docSnap.id === currentUserEmail) {
-            return;
+            return; 
         }
 
         const otherUserTeaches = otherUser.teach || '';
@@ -327,7 +389,7 @@ async function displayMatches(currentUserTeachSkill, currentUserLearnSkill, curr
     });
 
     if (matchesFound.length > 0) {
-        matchesFound.sort((a, b) => b.score - a.score);
+        matchesFound.sort((a, b) => b.score - a.score); 
 
         matchesFound.forEach(match => {
             const matchElement = document.createElement("div");
@@ -351,57 +413,67 @@ async function displayMatches(currentUserTeachSkill, currentUserLearnSkill, curr
 
 // --- Real-time Match Notifications ---
 
-
 async function loadMatchNotifications() {
     if (!currentUserEmail) return;
 
     const notificationsDiv = document.getElementById("matchNotifications");
 
-    const currentUserProfile = (await getDoc(doc(db, "users", currentUserEmail))).data();
-    if (!currentUserProfile) {
-        notificationsDiv.innerHTML = "<p>Please complete your profile to see match notifications.</p>";
+    const currentUserProfileSnap = await getDoc(doc(db, "users", currentUserEmail));
+    const currentUserProfile = currentUserProfileSnap.exists() ? currentUserProfileSnap.data() : null;
+
+    if (!currentUserProfile || (!currentUserProfile.teach && !currentUserProfile.learn)) {
+        notificationsDiv.innerHTML = "<p>Please complete your profile (teach/learn skills) to see match notifications.</p>";
         return;
     }
 
     const usersCollectionRef = collection(db, "users");
     onSnapshot(usersCollectionRef, (snapshot) => {
         const newPotentialMatches = [];
+        let hasExistingNotifications = notificationsDiv.innerHTML !== "<p>Waiting for relevant skill matches...</p>";
 
-        snapshot.forEach(docSnap => {
-            const otherUser = docSnap.data();
-            if (docSnap.id === currentUserEmail) {
-                return;
-            }
 
-            const otherUserTeaches = otherUser.teach || '';
-            const otherUserLearns = otherUser.learn || '';
-
-            let notificationMessage = "";
-
-            if (currentUserProfile.learn && otherUserTeaches === currentUserProfile.learn) {
-                if (!displayedMatchNotifications.has(docSnap.id + otherUserTeaches)) {
-                    notificationMessage += `${otherUser.name || otherUser.email} can teach "${otherUserTeaches}". `;
-                    displayedMatchNotifications.add(docSnap.id + otherUserTeaches);
+        snapshot.docChanges().forEach(change => {
+            if (change.type === "added" || change.type === "modified") {
+                const otherUser = change.doc.data();
+                if (change.doc.id === currentUserEmail) {
+                    return; 
                 }
-            }
-            if (currentUserProfile.teach && otherUserLearns === currentUserProfile.teach) {
-                if (!displayedMatchNotifications.has(docSnap.id + otherUserLearns)) {
-                    notificationMessage += `${otherUser.name || otherUser.email} wants to learn "${otherUserLearns}". `;
-                    displayedMatchNotifications.add(docSnap.id + otherUserLearns);
-                }
-            }
 
-            if (notificationMessage) {
-                newPotentialMatches.push({
-                    id: docSnap.id,
-                    message: notificationMessage.trim(),
-                    email: otherUser.email
-                });
+                const otherUserTeaches = otherUser.teach || '';
+                const otherUserLearns = otherUser.learn || '';
+
+                let notificationMessage = "";
+                let matchIdentified = false;
+                if (currentUserProfile.learn && otherUserTeaches === currentUserProfile.learn) {
+                    const notificationKey = change.doc.id + '-teaches-' + otherUserTeaches;
+                    if (!displayedMatchNotifications.has(notificationKey)) {
+                        notificationMessage += `${otherUser.name || otherUser.email} can teach "${otherUserTeaches}". `;
+                        displayedMatchNotifications.add(notificationKey);
+                        matchIdentified = true;
+                    }
+                }
+                if (currentUserProfile.teach && otherUserLearns === currentUserProfile.teach) {
+                    const notificationKey = change.doc.id + '-learns-' + otherUserLearns;
+                    if (!displayedMatchNotifications.has(notificationKey)) {
+                        notificationMessage += `${otherUser.name || otherUser.email} wants to learn "${otherUserLearns}". `;
+                        displayedMatchNotifications.add(notificationKey);
+                        matchIdentified = true;
+                    }
+                }
+
+                if (matchIdentified && notificationMessage) {
+                    newPotentialMatches.push({
+                        id: change.doc.id,
+                        message: notificationMessage.trim(),
+                        email: otherUser.email
+                    });
+                }
             }
         });
 
+
         if (newPotentialMatches.length > 0) {
-            if (notificationsDiv.innerHTML === "<p>Waiting for relevant skill matches...</p>") {
+            if (!hasExistingNotifications) { 
                 notificationsDiv.innerHTML = "";
             }
             newPotentialMatches.forEach(match => {
@@ -410,11 +482,11 @@ async function loadMatchNotifications() {
                 notificationElement.innerHTML = `
                     <p><strong>New Match!</strong> ${match.message}</p>
                     <button onclick="displayPage('matchesSection')">View Matches</button>
-                    <button onclick="proposeSession('${match.email}', '${currentUserProfile.teach}')">Propose Session with ${match.email.split('@')[0]}</button>
+                    <button onclick="proposeSession('${match.email}', '${currentUserProfile.teach || ''}')">Propose Session with ${match.email.split('@')[0]}</button>
                 `;
-                notificationsDiv.prepend(notificationElement);
+                notificationsDiv.prepend(notificationElement); 
             });
-        } else if (notificationsDiv.children.length === 0) {
+        } else if (notificationsDiv.children.length === 0 && !hasExistingNotifications) {
             notificationsDiv.innerHTML = "<p>Waiting for relevant skill matches...</p>";
         }
     }, (error) => {
@@ -465,11 +537,12 @@ async function scheduleSession() {
             dateTime: new Date(sessionDateTime),
             duration: parseInt(sessionDuration),
             type: sessionType,
-            status: "pending",
+            status: "pending", 
             timestamp: serverTimestamp(),
         });
 
         displayMessage("Session proposed successfully! Waiting for partner's confirmation.", 'success');
+        
         document.getElementById("sessionPartnerEmail").value = "";
         document.getElementById("sessionSkill").value = "";
         document.getElementById("sessionDateTime").value = "";
@@ -488,41 +561,97 @@ async function loadUpcomingSessions() {
     if (!currentUserEmail) return;
 
     const upcomingSessionsDiv = document.getElementById("upcomingSessions");
-    upcomingSessionsDiv.innerHTML = "";
-
+    upcomingSessionsDiv.innerHTML = ""; 
     const sessionsQuery = query(
         collection(db, "sessions"),
-        where("initiator", "==", currentUserEmail),
+        where("initiator", "==", currentUserEmail), 
         orderBy("dateTime", "asc")
     );
 
-    onSnapshot(sessionsQuery, (snapshot) => {
-        if (snapshot.empty) {
-            upcomingSessionsDiv.innerHTML = "<p>No upcoming sessions.</p>";
-            return;
-        }
+    const partnerSessionsQuery = query(
+        collection(db, "sessions"),
+        where("partner", "==", currentUserEmail), 
+        orderBy("dateTime", "asc")
+    );
 
-        upcomingSessionsDiv.innerHTML = "";
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            const sessionTime = data.dateTime ? new Date(data.dateTime.toDate()).toLocaleString() : 'N/A';
-            const sessionElement = document.createElement("div");
-            sessionElement.innerHTML = `
-                <h4>Skill: ${data.skill} with ${data.partner}</h4>
-                <p>When: ${sessionTime}</p>
-                <p>Duration: ${data.duration} mins</p>
-                <p>Type: ${data.type}</p>
-                <p>Status: ${data.status}</p>
-            `;
-            upcomingSessionsDiv.appendChild(sessionElement);
+
+    // Listen for initiator sessions
+    onSnapshot(sessionsQuery, (snapshot) => {
+        let allSessions = [];
+        snapshot.forEach((doc) => allSessions.push({ ...doc.data(), id: doc.id }));
+
+        onSnapshot(partnerSessionsQuery, (partnerSnapshot) => {
+            partnerSnapshot.forEach((doc) => {
+                if (!allSessions.some(session => session.id === doc.id)) {
+                    allSessions.push({ ...doc.data(), id: doc.id });
+                }
+            });
+
+            allSessions.sort((a, b) => (a.dateTime && b.dateTime) ? a.dateTime.toDate() - b.dateTime.toDate() : 0);
+
+            if (allSessions.length === 0) {
+                upcomingSessionsDiv.innerHTML = "<p>No upcoming sessions.</p>";
+                return;
+            }
+
+            upcomingSessionsDiv.innerHTML = ""; 
+            allSessions.forEach((data) => {
+                const sessionTime = data.dateTime ? new Date(data.dateTime.toDate()).toLocaleString() : 'N/A';
+                const sessionElement = document.createElement("div");
+                sessionElement.innerHTML = `
+                    <h4>Skill: ${data.skill} with ${data.initiator === currentUserEmail ? data.partner : data.initiator}</h4>
+                    <p>When: ${sessionTime}</p>
+                    <p>Duration: ${data.duration} mins</p>
+                    <p>Type: ${data.type}</p>
+                    <p>Status: ${data.status}</p>
+                    ${data.status === 'pending' && data.partner === currentUserEmail ? `<button onclick="acceptSession('${data.id}')">Accept</button>` : ''}
+                    ${data.status === 'pending' && data.initiator === currentUserEmail ? `<button disabled>Waiting for ${data.partner.split('@')[0]} to accept</button>` : ''}
+                    <button onclick="cancelSession('${data.id}')">Cancel</button>
+                `;
+                upcomingSessionsDiv.appendChild(sessionElement);
+            });
+        }, (error) => {
+            console.error("Error loading partner sessions:", error);
+            upcomingSessionsDiv.innerHTML = "<p>Error loading sessions.</p>";
         });
+
     }, (error) => {
-        console.error("Error loading upcoming sessions:", error);
+        console.error("Error loading initiator sessions:", error);
         upcomingSessionsDiv.innerHTML = "<p>Error loading sessions.</p>";
     });
 }
 
+/**
+ * Accepts a pending session.
+ * @param {string} sessionId - The ID of the session document.
+ */
+window.acceptSession = async (sessionId) => {
+    try {
+        await setDoc(doc(db, "sessions", sessionId), { status: "accepted" }, { merge: true });
+        displayMessage("Session accepted!", 'success');
+    } catch (error) {
+        console.error("Error accepting session:", error);
+        displayMessage("Error accepting session.", 'error');
+    }
+};
+
+/**
+ * Cancels a session.
+ * @param {string} sessionId - The ID of the session document.
+ */
+window.cancelSession = async (sessionId) => {
+    try {
+        await setDoc(doc(db, "sessions", sessionId), { status: "cancelled" }, { merge: true });
+        displayMessage("Session cancelled.", 'success');
+    } catch (error) {
+        console.error("Error cancelling session:", error);
+        displayMessage("Error cancelling session.", 'error');
+    }
+};
+
+
 // --- Community Forum Functions ---
+
 
 async function submitForumPost() {
     const title = document.getElementById("forumTitle").value.trim();
@@ -568,7 +697,7 @@ async function loadForumPosts() {
             return;
         }
 
-        forumPostsDiv.innerHTML = "";
+        forumPostsDiv.innerHTML = ""; 
         snapshot.forEach((doc) => {
             const data = doc.data();
             const postTime = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'Loading...';
@@ -596,15 +725,14 @@ async function sendMessage() {
         displayMessage("Please log in to send messages.", 'error');
         return;
     }
-    if (!messageContent) return;
-
+    if (!messageContent) return; 
     try {
         await addDoc(collection(db, "messages"), {
             sender: currentUserEmail,
             message: messageContent,
             timestamp: serverTimestamp(),
         });
-        document.getElementById("chatBox").value = "";
+        document.getElementById("chatBox").value = ""; 
     } catch (error) {
         console.error("Error sending message:", error);
         displayMessage("Error sending message. Please try again.", 'error');
@@ -616,7 +744,7 @@ async function sendMessage() {
  */
 async function loadMessages() {
     const chatMessagesDiv = document.getElementById("chatMessages");
-    chatMessagesDiv.innerHTML = "";
+    chatMessagesDiv.innerHTML = ""; 
 
     const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
 
@@ -626,7 +754,7 @@ async function loadMessages() {
             return;
         }
 
-        chatMessagesDiv.innerHTML = "";
+        chatMessagesDiv.innerHTML = ""; 
         snapshot.forEach((doc) => {
             const data = doc.data();
             const messageTime = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'Loading...';
@@ -667,6 +795,7 @@ async function submitSessionFeedback() {
             timestamp: serverTimestamp(),
         });
         displayMessage("Feedback submitted successfully!", 'success');
+      
         document.getElementById("feedbackTargetEmail").value = "";
         document.getElementById("rating").value = "5";
         document.getElementById("feedbackText").value = "";
@@ -683,7 +812,7 @@ async function loadReceivedSessionFeedback() {
     if (!currentUserEmail) return;
 
     const receivedFeedbackDiv = document.getElementById("receivedFeedback");
-    receivedFeedbackDiv.innerHTML = "";
+    receivedFeedbackDiv.innerHTML = ""; 
 
     const feedbackQuery = query(
         collection(db, "feedback"),
@@ -697,7 +826,7 @@ async function loadReceivedSessionFeedback() {
             return;
         }
 
-        receivedFeedbackDiv.innerHTML = "";
+        receivedFeedbackDiv.innerHTML = ""; 
         snapshot.forEach((doc) => {
             const data = doc.data();
             const feedbackTime = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'Loading...';
@@ -712,6 +841,78 @@ async function loadReceivedSessionFeedback() {
     }, (error) => {
         console.error("Error listening to received feedback:", error);
         receivedFeedbackDiv.innerHTML = "<p>Error loading feedback.</p>";
+    });
+}
+
+// --- Resource Sharing Functions ---
+
+async function shareResource() {
+    const title = document.getElementById("resourceTitle").value.trim();
+    const url = document.getElementById("resourceUrl").value.trim();
+    const description = document.getElementById("resourceDescription").value.trim();
+    const skillTag = document.getElementById("resourceSkillTag").value.trim().toLowerCase();
+
+    if (!currentUserEmail) {
+        displayMessage("Please log in to share resources.", 'error');
+        return;
+    }
+    if (!title || !url || !skillTag) {
+        displayMessage("Please fill in resource title, URL, and skill tag.", 'error');
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, "resources"), {
+            title: title,
+            url: url,
+            description: description,
+            skillTag: skillTag,
+            sharedBy: currentUserEmail,
+            timestamp: serverTimestamp(),
+        });
+        displayMessage("Resource shared successfully!", 'success');
+        document.getElementById("resourceTitle").value = "";
+        document.getElementById("resourceUrl").value = "";
+        document.getElementById("resourceDescription").value = "";
+        document.getElementById("resourceSkillTag").value = "";
+    } catch (error) {
+        console.error("Error sharing resource:", error);
+        displayMessage("Error sharing resource. Please try again.", 'error');
+    }
+}
+
+/**
+ * Loads and displays shared resources in real-time.
+ */
+async function loadSharedResources() {
+    const sharedResourcesDiv = document.getElementById("sharedResources");
+    sharedResourcesDiv.innerHTML = ""; 
+
+    const resourcesQuery = query(collection(db, "resources"), orderBy("timestamp", "desc"));
+
+    onSnapshot(resourcesQuery, (snapshot) => {
+        if (snapshot.empty) {
+            sharedResourcesDiv.innerHTML = "<p>No resources shared yet. Be the first!</p>";
+            return;
+        }
+
+        sharedResourcesDiv.innerHTML = ""; 
+        snapshot.forEach((doc) => {
+            const resource = doc.data();
+            const resourceTime = resource.timestamp ? new Date(resource.timestamp.toDate()).toLocaleString() : 'Loading...';
+            const div = document.createElement("div");
+            div.className = "resource-item";
+            div.innerHTML = `
+                <h4><a href="${resource.url}" target="_blank" rel="noopener noreferrer">${resource.title}</a></h4>
+                <p>Skill: ${resource.skillTag}</p>
+                <p>${resource.description}</p>
+                <small>Shared by ${resource.sharedBy.split('@')[0]} on ${resourceTime}</small>
+            `;
+            sharedResourcesDiv.appendChild(div);
+        });
+    }, (error) => {
+        console.error("Error listening to shared resources:", error);
+        sharedResourcesDiv.innerHTML = "<p>Error loading shared resources.</p>";
     });
 }
 
