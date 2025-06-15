@@ -25,7 +25,7 @@ import {
 // --- Firebase Configuration ---
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC_NtOHcDXve4Fbz1e689vzVbNtzksIpzg", 
+            apiKey: "AIzaSyC_NtOHcDXve4Fbz1e689vzVbNtzksIpzg",
             authDomain: "swap-app-cf4da.firebaseapp.com",
             projectId: "swap-app-cf4da",
             storageBucket: "swap-app-cf4da.appspot.com",
@@ -42,7 +42,7 @@ const db = getFirestore(app);
 
 // --- Global Variables ---
 let currentUserEmail = "";
-const displayedMatchNotifications = new Set(); 
+const displayedMatchNotifications = new Set();
 
 // --- Get References to HTML Elements ---
 // Login Form Elements
@@ -60,7 +60,7 @@ const registerSection = document.getElementById("registerSection");
 
 // Authentication Section and Toggle Buttons
 const authMessage = document.getElementById("authMessage");
-const authContainer = document.getElementById("authContainer"); 
+const authContainer = document.getElementById("authContainer");
 const showRegisterBtn = document.getElementById("showRegisterBtn");
 const showLoginBtn = document.getElementById("showLoginBtn");
 
@@ -109,7 +109,7 @@ showRegisterBtn.addEventListener("click", (event) => {
     event.preventDefault(); // Prevent page reload
     loginSection.classList.add("hidden");
     registerSection.classList.remove("hidden");
-    authMessage.classList.add('hidden'); 
+    authMessage.classList.add('hidden');
     loginEmailInput.value = '';
     loginPasswordInput.value = '';
 });
@@ -121,7 +121,7 @@ showLoginBtn.addEventListener("click", (event) => {
     event.preventDefault();
     registerSection.classList.add("hidden");
     loginSection.classList.remove("hidden");
-    authMessage.classList.add('hidden'); 
+    authMessage.classList.add('hidden');
     registerEmailInput.value = '';
     registerPasswordInput.value = '';
     registerConfirmPasswordInput.value = '';
@@ -184,7 +184,7 @@ loginBtn.addEventListener("click", async () => {
     } catch (error) {
         console.error("Login Error:", error);
         let errorMessage = "Login failed. Please check your credentials.";
-        if (error.code === 'auth/invalid-credential') { 
+        if (error.code === 'auth/invalid-credential') {
             errorMessage = "Invalid email or password.";
         } else if (error.code === 'auth/user-disabled') {
             errorMessage = "Your account has been disabled.";
@@ -212,7 +212,7 @@ window.logout = async () => {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUserEmail = user.email;
-        authContainer.classList.add("hidden"); 
+        authContainer.classList.add("hidden");
         logoutBtn.classList.remove("hidden");
         appContent.classList.remove("hidden");
         loginEmailInput.value = "";
@@ -228,16 +228,16 @@ onAuthStateChanged(auth, (user) => {
         loadForumPosts();
         loadMessages();
         loadReceivedSessionFeedback();
-        loadSharedResources();
+        // loadSharedResources(); // Removed: No longer needed
 
-        displayPage('profileSection'); 
+        displayPage('profileSection');
 
     } else {
         currentUserEmail = "";
         displayedMatchNotifications.clear();
-        authContainer.classList.remove("hidden"); 
-        loginSection.classList.remove("hidden"); 
-        registerSection.classList.add("hidden"); 
+        authContainer.classList.remove("hidden");
+        loginSection.classList.remove("hidden");
+        registerSection.classList.add("hidden");
         logoutBtn.classList.add("hidden");
         appContent.classList.add("hidden");
 
@@ -249,7 +249,7 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById("forumPosts").innerHTML = "<p>No forum posts yet. Be the first to post!</p>";
         document.getElementById("chatMessages").innerHTML = "";
         document.getElementById("receivedFeedback").innerHTML = "";
-        document.getElementById("sharedResources").innerHTML = "";
+        // document.getElementById("sharedResources").innerHTML = ""; // Removed: No longer needed
         authMessage.innerText = "Please log in or register.";
     }
 });
@@ -356,7 +356,7 @@ async function displayMatches(currentUserTeachSkill, currentUserLearnSkill, curr
     querySnapshot.forEach(docSnap => {
         const otherUser = docSnap.data();
         if (docSnap.id === currentUserEmail) {
-            return; 
+            return;
         }
 
         const otherUserTeaches = otherUser.teach || '';
@@ -389,7 +389,7 @@ async function displayMatches(currentUserTeachSkill, currentUserLearnSkill, curr
     });
 
     if (matchesFound.length > 0) {
-        matchesFound.sort((a, b) => b.score - a.score); 
+        matchesFound.sort((a, b) => b.score - a.score);
 
         matchesFound.forEach(match => {
             const matchElement = document.createElement("div");
@@ -436,7 +436,7 @@ async function loadMatchNotifications() {
             if (change.type === "added" || change.type === "modified") {
                 const otherUser = change.doc.data();
                 if (change.doc.id === currentUserEmail) {
-                    return; 
+                    return;
                 }
 
                 const otherUserTeaches = otherUser.teach || '';
@@ -473,7 +473,7 @@ async function loadMatchNotifications() {
 
 
         if (newPotentialMatches.length > 0) {
-            if (!hasExistingNotifications) { 
+            if (!hasExistingNotifications) {
                 notificationsDiv.innerHTML = "";
             }
             newPotentialMatches.forEach(match => {
@@ -484,7 +484,7 @@ async function loadMatchNotifications() {
                     <button onclick="displayPage('matchesSection')">View Matches</button>
                     <button onclick="proposeSession('${match.email}', '${currentUserProfile.teach || ''}')">Propose Session with ${match.email.split('@')[0]}</button>
                 `;
-                notificationsDiv.prepend(notificationElement); 
+                notificationsDiv.prepend(notificationElement);
             });
         } else if (notificationsDiv.children.length === 0 && !hasExistingNotifications) {
             notificationsDiv.innerHTML = "<p>Waiting for relevant skill matches...</p>";
@@ -537,12 +537,12 @@ async function scheduleSession() {
             dateTime: new Date(sessionDateTime),
             duration: parseInt(sessionDuration),
             type: sessionType,
-            status: "pending", 
+            status: "pending",
             timestamp: serverTimestamp(),
         });
 
         displayMessage("Session proposed successfully! Waiting for partner's confirmation.", 'success');
-        
+
         document.getElementById("sessionPartnerEmail").value = "";
         document.getElementById("sessionSkill").value = "";
         document.getElementById("sessionDateTime").value = "";
@@ -561,16 +561,16 @@ async function loadUpcomingSessions() {
     if (!currentUserEmail) return;
 
     const upcomingSessionsDiv = document.getElementById("upcomingSessions");
-    upcomingSessionsDiv.innerHTML = ""; 
+    upcomingSessionsDiv.innerHTML = "";
     const sessionsQuery = query(
         collection(db, "sessions"),
-        where("initiator", "==", currentUserEmail), 
+        where("initiator", "==", currentUserEmail),
         orderBy("dateTime", "asc")
     );
 
     const partnerSessionsQuery = query(
         collection(db, "sessions"),
-        where("partner", "==", currentUserEmail), 
+        where("partner", "==", currentUserEmail),
         orderBy("dateTime", "asc")
     );
 
@@ -594,7 +594,7 @@ async function loadUpcomingSessions() {
                 return;
             }
 
-            upcomingSessionsDiv.innerHTML = ""; 
+            upcomingSessionsDiv.innerHTML = "";
             allSessions.forEach((data) => {
                 const sessionTime = data.dateTime ? new Date(data.dateTime.toDate()).toLocaleString() : 'N/A';
                 const sessionElement = document.createElement("div");
@@ -697,7 +697,7 @@ async function loadForumPosts() {
             return;
         }
 
-        forumPostsDiv.innerHTML = ""; 
+        forumPostsDiv.innerHTML = "";
         snapshot.forEach((doc) => {
             const data = doc.data();
             const postTime = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'Loading...';
@@ -725,14 +725,14 @@ async function sendMessage() {
         displayMessage("Please log in to send messages.", 'error');
         return;
     }
-    if (!messageContent) return; 
+    if (!messageContent) return;
     try {
         await addDoc(collection(db, "messages"), {
             sender: currentUserEmail,
             message: messageContent,
             timestamp: serverTimestamp(),
         });
-        document.getElementById("chatBox").value = ""; 
+        document.getElementById("chatBox").value = "";
     } catch (error) {
         console.error("Error sending message:", error);
         displayMessage("Error sending message. Please try again.", 'error');
@@ -744,7 +744,7 @@ async function sendMessage() {
  */
 async function loadMessages() {
     const chatMessagesDiv = document.getElementById("chatMessages");
-    chatMessagesDiv.innerHTML = ""; 
+    chatMessagesDiv.innerHTML = "";
 
     const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
 
@@ -754,7 +754,7 @@ async function loadMessages() {
             return;
         }
 
-        chatMessagesDiv.innerHTML = ""; 
+        chatMessagesDiv.innerHTML = "";
         snapshot.forEach((doc) => {
             const data = doc.data();
             const messageTime = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'Loading...';
@@ -762,7 +762,7 @@ async function loadMessages() {
             messageElement.textContent = `${data.sender.split('@')[0]}: ${data.message} (${messageTime})`;
             chatMessagesDiv.appendChild(messageElement);
         });
-        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; 
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
     }, (error) => {
         console.error("Error listening to messages:", error);
         chatMessagesDiv.innerHTML = "<p>Error loading messages.</p>";
@@ -795,7 +795,7 @@ async function submitSessionFeedback() {
             timestamp: serverTimestamp(),
         });
         displayMessage("Feedback submitted successfully!", 'success');
-      
+
         document.getElementById("feedbackTargetEmail").value = "";
         document.getElementById("rating").value = "5";
         document.getElementById("feedbackText").value = "";
@@ -812,7 +812,7 @@ async function loadReceivedSessionFeedback() {
     if (!currentUserEmail) return;
 
     const receivedFeedbackDiv = document.getElementById("receivedFeedback");
-    receivedFeedbackDiv.innerHTML = ""; 
+    receivedFeedbackDiv.innerHTML = "";
 
     const feedbackQuery = query(
         collection(db, "feedback"),
@@ -826,7 +826,7 @@ async function loadReceivedSessionFeedback() {
             return;
         }
 
-        receivedFeedbackDiv.innerHTML = ""; 
+        receivedFeedbackDiv.innerHTML = "";
         snapshot.forEach((doc) => {
             const data = doc.data();
             const feedbackTime = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'Loading...';
@@ -845,76 +845,8 @@ async function loadReceivedSessionFeedback() {
 }
 
 // --- Resource Sharing Functions ---
+// Removed: All functions and logic related to resource sharing are removed.
 
-async function shareResource() {
-    const title = document.getElementById("resourceTitle").value.trim();
-    const url = document.getElementById("resourceUrl").value.trim();
-    const description = document.getElementById("resourceDescription").value.trim();
-    const skillTag = document.getElementById("resourceSkillTag").value.trim().toLowerCase();
-
-    if (!currentUserEmail) {
-        displayMessage("Please log in to share resources.", 'error');
-        return;
-    }
-    if (!title || !url || !skillTag) {
-        displayMessage("Please fill in resource title, URL, and skill tag.", 'error');
-        return;
-    }
-
-    try {
-        await addDoc(collection(db, "resources"), {
-            title: title,
-            url: url,
-            description: description,
-            skillTag: skillTag,
-            sharedBy: currentUserEmail,
-            timestamp: serverTimestamp(),
-        });
-        displayMessage("Resource shared successfully!", 'success');
-        document.getElementById("resourceTitle").value = "";
-        document.getElementById("resourceUrl").value = "";
-        document.getElementById("resourceDescription").value = "";
-        document.getElementById("resourceSkillTag").value = "";
-    } catch (error) {
-        console.error("Error sharing resource:", error);
-        displayMessage("Error sharing resource. Please try again.", 'error');
-    }
-}
-
-/**
- * Loads and displays shared resources in real-time.
- */
-async function loadSharedResources() {
-    const sharedResourcesDiv = document.getElementById("sharedResources");
-    sharedResourcesDiv.innerHTML = ""; 
-
-    const resourcesQuery = query(collection(db, "resources"), orderBy("timestamp", "desc"));
-
-    onSnapshot(resourcesQuery, (snapshot) => {
-        if (snapshot.empty) {
-            sharedResourcesDiv.innerHTML = "<p>No resources shared yet. Be the first!</p>";
-            return;
-        }
-
-        sharedResourcesDiv.innerHTML = ""; 
-        snapshot.forEach((doc) => {
-            const resource = doc.data();
-            const resourceTime = resource.timestamp ? new Date(resource.timestamp.toDate()).toLocaleString() : 'Loading...';
-            const div = document.createElement("div");
-            div.className = "resource-item";
-            div.innerHTML = `
-                <h4><a href="${resource.url}" target="_blank" rel="noopener noreferrer">${resource.title}</a></h4>
-                <p>Skill: ${resource.skillTag}</p>
-                <p>${resource.description}</p>
-                <small>Shared by ${resource.sharedBy.split('@')[0]} on ${resourceTime}</small>
-            `;
-            sharedResourcesDiv.appendChild(div);
-        });
-    }, (error) => {
-        console.error("Error listening to shared resources:", error);
-        sharedResourcesDiv.innerHTML = "<p>Error loading shared resources.</p>";
-    });
-}
 
 // --- Dark Mode Toggle Function ---
 

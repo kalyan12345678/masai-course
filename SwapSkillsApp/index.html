@@ -15,12 +15,10 @@
         <ul>
             <li><a onclick="displayPage('profileSection')">Profile</a></li>
             <li><a onclick="displayPage('matchesSection')">Matches</a></li>
-            <li><a onclick="displayPage('assessmentSection')">Assessment</a></li>
             <li><a onclick="displayPage('sessionsSection')">Sessions</a></li>
             <li><a onclick="displayPage('forumSection')">Forum</a></li>
             <li><a onclick="displayPage('messagingSection')">Messages</a></li>
             <li><a onclick="displayPage('feedbackSection')">Feedback</a></li>
-            <li><a onclick="displayPage('resourcesSection')">Resources</a></li>
             <li><button class="toggle-dark-nav" onclick="toggleDarkMode()">Toggle Dark Mode</button></li>
             <li><button id="logoutBtn" class="hidden" onclick="logout()">Logout</button></li>
         </ul>
@@ -95,13 +93,6 @@
                 </div>
             </div>
 
-            <div id="assessmentSection" class="app-page-section">
-                <div class="card">
-                    <h2>Skill Assessment (Coming Soon)</h2>
-                    <p>This section will feature AI-powered tools to assess your skills and suggest personalized learning paths.</p>
-                </div>
-            </div>
-
             <div id="sessionsSection" class="app-page-section">
                 <div class="card">
                     <h2>Exchange Sessions</h2>
@@ -171,20 +162,7 @@
                 </div>
             </div>
 
-            <div id="resourcesSection" class="app-page-section">
-                <div class="card">
-                    <h2>Resource Sharing</h2>
-                    <h3>Share a Resource</h3>
-                    <input type="text" id="resourceTitle" placeholder="Resource Title" required />
-                    <input type="url" id="resourceUrl" placeholder="Resource URL (e.g., https://example.com/learn)" required />
-                    <textarea id="resourceDescription" placeholder="Brief description of the resource..." rows="2"></textarea>
-                    <input type="text" id="resourceSkillTag" placeholder="Skill Tag (e.g., 'coding')" required />
-                    <button onclick="shareResource()">Share Resource</button>
-                    <h3>Shared Resources</h3>
-                    <div id="sharedResources"></div>
-                </div>
             </div>
-        </div>
     </div>
 
     <script type="module" src="script.js"></script>
